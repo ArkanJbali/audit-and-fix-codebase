@@ -1,0 +1,4 @@
+interface:
+  display_name: "Audit & Fix Codebase"
+  short_description: "Two-pass security + dependency + cleanup audit with approval before fixes. Works on any stack."
+  default_prompt: "Use $audit-and-fix-codebase to audit my whole codebase for security, dependencies, and cleanups; report findings first, then fix after I approve."
