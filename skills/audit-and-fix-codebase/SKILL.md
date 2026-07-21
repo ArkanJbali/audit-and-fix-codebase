@@ -9,7 +9,7 @@ Act as a **senior software engineer and security reviewer**. Audit the user's co
 
 Work in **two passes**. Pass 1 reports and changes nothing. Pass 2 fixes, only after the user approves, in a safe order with a verification checkpoint after each group. Nothing changes without the user's say-so.
 
-This is a portable instruction skill. It needs no MCP server, no network access, no API key, no bundled script. It works in any runtime that reads `SKILL.md` (Claude Code, opencode, Codex) plus the lightweight `agents/openai.yaml` metadata for tool discovery. Normalize whatever tool you're running in to the verbs below: "edit a file" = your edit/apply tool, "run a command" = your shell/bash tool, "stop for approval" = pause and ask the user a question before continuing.
+This is a portable instruction skill. It needs no MCP server, no network access, no API key, no bundled script. It works in any runtime that reads `SKILL.md` (Claude Code, opencode, Codex) plus the lightweight `agents/openai.yaml` metadata for tool discovery. Deeper guidance for each audit section lives in the `references/` directory as progressive-disclosure files: load them when you need to deepen a finding, verify a scanner command, or follow a structured walk-through. Normalize whatever tool you're running in to the verbs below: "edit a file" = your edit/apply tool, "run a command" = your shell/bash tool, "stop for approval" = pause and ask the user a question before continuing.
 
 ## Tool-agnostic operating notes
 
@@ -30,22 +30,22 @@ This is a portable instruction skill. It needs no MCP server, no network access,
 
 Read code before flagging it — findings come from the source in front of you, not from how projects "usually" look. Every finding needs: **severity** (Critical/High/Medium/Low), **what** it is, **where** (file:line), **why** it matters, **suggested fix**. One table per section. Skip empty sections with one line ("no findings"). Do not edit anything in Pass 1.
 
-1. **Security** (do this first — it's the priority)
+1. **Security** (do this first — it's the priority) — use [references/security-checklist.md](references/security-checklist.md) for detailed per-category checks and severity rubrics.
    - Hardcoded secrets, API keys, tokens, passwords in code or committed config (`.env` in git, connection strings); also check whether committed files with secrets appear in git history.
    - Injection: SQL/command built by string concatenation, XSS (unescaped output, `dangerouslySetInnerHTML`, `innerHTML`), unsafe `eval`/dynamic code execution, path traversal on file endpoints, SSRF on user-supplied URLs, insecure deserialization.
    - Missing or broken auth: unprotected routes or actions, missing object-level ownership checks (IDOR), mass assignment / over-posting on create/update endpoints.
    - Sensitive data in logs, localStorage/sessionStorage, URLs, or error responses (stack traces to clients).
    - Config: overly open CORS, debug mode in production config, weak password hashing (MD5/SHA1/plain), missing rate limiting on login/OTP/reset endpoints.
-2. **Dependencies**
+2. **Dependencies** — use [references/dependency-scanners.md](references/dependency-scanners.md) for exact scanner commands, flags, and gotchas for each package manager.
    - Run the real scanner for the package manager (`npm audit` / `pip-audit` / `dotnet list package --vulnerable` / `cargo audit` / `composer audit` / `govulncheck`, etc.) and report its actual output — never recite CVEs from memory.
    - Table of direct packages: current vs latest; patch/minor bumps vs **major upgrades listed separately** with a one-line migration note.
    - Unused/dead dependencies; license red flags (copyleft or commercial licenses in a commercial codebase) — flag, don't adjudicate.
-3. **Duplicated logic** — the same rule/validation/transform/API call/format implemented in 2+ places where a bug fix would have to be applied twice. Only flag duplication that actually causes maintenance pain — ignore coincidental textual similarity; duplicated *knowledge* is the target.
-4. **Obvious refactors** — dead code, unused imports/variables, functions clearly too long or doing too many things, misleading names. Only the obvious wins; no architectural proposals.
+3. **Duplicated logic** — use [references/duplication-and-refactors.md](references/duplication-and-refactors.md) for distinguishing knowledge vs text duplication and the Sandi Metz wrong-abstraction guideline. The same rule/validation/transform/API call/format implemented in 2+ places where a bug fix would have to be applied twice. Only flag duplication that actually causes maintenance pain — ignore coincidental textual similarity; duplicated *knowledge* is the target.
+4. **Obvious refactors** — use [references/duplication-and-refactors.md](references/duplication-and-refactors.md) for complexity heuristics and dead code detection. Dead code, unused imports/variables, functions clearly too long or doing too many things, misleading names. Only the obvious wins; no architectural proposals.
 5. **Reusable pieces** (only if obvious) — UI/logic repeated enough that one shared component/hook/function clearly pays off. Skip if it's a stretch.
 6. **Quick health checks** — missing error handling around network/IO, missing timeouts on outbound HTTP, swallowed exceptions, N+1 queries, unbounded queries / missing pagination on large lists, resource leaks. Anything else genuinely risky you happen to notice — keep it brief.
 
-End Pass 1 with: the **top 5 items by risk**, and the question **"which groups/items do I fix?"** Then **stop and wait** for approval.
+See [references/review-checklist.md](references/review-checklist.md) for the full findings output template, severity rubric, and walk-order checklist. End Pass 1 with: the **top 5 items by risk**, and the question **"which groups/items do I fix?"** Then **stop and wait** for approval.
 
 ## PASS 2 — Fix (after explicit approval, approved items only)
 
@@ -55,7 +55,7 @@ Fix in this order, and after **each** group: re-run the baseline commands (build
 2. **Dependencies.** Bump patch/minor freely; update the lockfile; do NOT apply major upgrades — leave them flagged with the one-line migration note. Build and test after updating.
 3. **Safe cleanups.** Duplication, refactors, reusable pieces — only the ones the user approved. These must NOT change behavior: same inputs, same outputs, same errors. Show **before/after** for each. Never weaken, skip, or delete a test to make anything pass.
 
-If companion guard skills are available, run them on your own output before presenting: a clean-code guard on Pass 2 diffs, a test guard on any tests you added.
+Use [references/review-checklist.md](references/review-checklist.md) for the full Pass 2 execution checklist with verification gates and commit conventions. If companion guard skills are available, run them on your own output before presenting: a clean-code guard on Pass 2 diffs, a test guard on any tests you added.
 
 ## Rules
 
@@ -63,7 +63,7 @@ If companion guard skills are available, run them on your own output before pres
 - Prefer the smallest change that solves the problem.
 - A fix needing a big rewrite or a breaking upgrade gets a recommendation, not an implementation.
 - If a finding is ambiguous (can't tell if code is dead, can't tell if behavior is intended), ask — don't guess.
-- Final summary: security issues fixed (with behavior changes), packages updated (old → new), what was cleaned up, and a **"needs your decision"** list (majors, big rewrites, unresolved ambiguities, secrets to rotate).
+- Final summary use the template in [references/review-checklist.md](references/review-checklist.md): security issues fixed (with behavior changes), packages updated (old → new), what was cleaned up, and a **"needs your decision"** list (majors, big rewrites, unresolved ambiguities, secrets to rotate).
 
 ## When NOT to use this skill
 

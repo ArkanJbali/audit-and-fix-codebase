@@ -117,10 +117,14 @@ skills/
     ├── SKILL.md
     ├── agents/openai.yaml
     └── references/
+        ├── security-checklist.md
+        ├── dependency-scanners.md
+        ├── duplication-and-refactors.md
+        ├── review-checklist.md
         └── sources.md
 ```
 
-The `SKILL.md` stays small so it loads cheaply; deeper guidance (external source URLs, citation material) lives in `references/sources.md` and loads only when the task needs it.
+The `SKILL.md` stays small so it loads cheaply; deeper guidance for each audit section lives in the `references/` directory and loads only when the task needs it.
 
 The skill content is pure-instruction Markdown plus lightweight `agents/openai.yaml` metadata — it needs no MCP server, network access, API key, shell command, local executable, or bundled script. `agents/openai.yaml` is lightweight display metadata (`display_name`, `short_description`, `default_prompt`) for Codex discovery.
 
@@ -146,7 +150,11 @@ This lists every skill the CLI discovers by scanning `skills/`, with its referen
 | --- | --- |
 | `skills/audit-and-fix-codebase/SKILL.md` | The skill body. Tools that read `SKILL.md` (Claude Code, opencode, Cursor, Continue) load this automatically. |
 | `skills/audit-and-fix-codebase/agents/openai.yaml` | Lightweight Codex/discovery metadata (`display_name`, `short_description`, `default_prompt`). |
-| `skills/audit-and-fix-codebase/references/sources.md` | Bibliography for source URLs the skill cites when reasoning about severity. Read only when verifying or citing a source. |
+| `skills/audit-and-fix-codebase/references/security-checklist.md` | Detailed security audit checklist — secrets, injection, auth, exposure, config, severity rubric. |
+| `skills/audit-and-fix-codebase/references/dependency-scanners.md` | Exact scanner commands for each package manager (npm, pip, dotnet, cargo, composer, govulncheck, bundler, mix). |
+| `skills/audit-and-fix-codebase/references/duplication-and-refactors.md` | Knowledge vs text duplication guidance, dead code detection, complexity heuristics, refactoring safety rules. |
+| `skills/audit-and-fix-codebase/references/review-checklist.md` | Structured walk-through for Pass 1 and Pass 2: output format, severity rubric, verification gates, final summary template. |
+| `skills/audit-and-fix-codebase/references/sources.md` | Bibliography for source URLs the skill cites when reasoning about severity. |
 
 ## License
 
