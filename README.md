@@ -1,6 +1,6 @@
 # audit-and-fix-codebase
 
-[![skills.sh](https://skills.sh/b/ArkanJbali/audit-and-fix-codebase)](https://skills.sh/ArkanJbali/audit-and-fix-codebase)
+[![skills.sh](https://skills.sh/b/arkanjbali/audit-and-fix-codebase)](https://skills.sh/arkanjbali/audit-and-fix-codebase)
 
 A focused, **two-pass audit skill** for coding agents: it reports security issues, vulnerable dependencies, duplicated logic, and obvious cleanups as a prioritized list — without changing anything — then, once the user approves, fixes them in a safe order (security first, dependencies next, cleanups last), checking the app still builds and runs after each step.
 
